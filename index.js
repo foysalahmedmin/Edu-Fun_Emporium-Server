@@ -32,41 +32,70 @@ async function run() {
 
     app.get('/toysSearch/:text', async (req, res) => {
       const text = req.params.text
-      const searchQuery = { 
-        name : {
-          $regex : text, 
-          $options : 'i'
-        } 
+      const searchQuery = {
+        name: {
+          $regex: text,
+          $options: 'i'
+        }
       };
       const result = await EduToysCollection.find(searchQuery).toArray()
       res.send(result)
     })
 
     app.get('/toysCategorize/:category', async (req, res) => {
-      const category = req.params.category ;
-      const query = { sub_category : category };
+      const category = req.params.category;
+      const query = { sub_category: category };
       const result = await EduToysCollection.find(query).toArray()
       res.send(result)
     })
 
     app.get('/toys/:id', async (req, res) => {
-      const id = req.params.id ;
-      const query = { _id : new ObjectId(id) };
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await EduToysCollection.findOne(query)
       res.send(result)
     })
 
     app.get('/myToys', async (req, res) => {
       const sellerEmail = req.query?.email
-      const query = { 
-        seller_email : sellerEmail
+      const query = {
+        seller_email: sellerEmail
       };
       const sort = {
-        price : -1
+        price: -1
       };
       const result = await EduToysCollection.find(query).sort(sort).toArray()
       res.send(result)
     })
+
+    app.post('/toys', async (req, res) => {
+      const toyInfo = req.body;
+      const result = await EduToysCollection.insertOne(toyInfo)
+      res.send(result)
+    })
+
+    app.put('/toys/:id', async (req, res) => {
+      const id = req.params.id;
+      const toyUpdate = req.body;
+      const updateDoc = {
+        $set: {
+          picture_url : toyUpdate?.picture_url ,
+          name : toyUpdate?.name ,
+          seller_name : toyUpdate?.seller_name ,
+          seller_email: toyUpdate?.seller_email ,
+          sub_category : toyUpdate?.sub_category ,
+          price : toyUpdate?.price ,
+          rating : toyUpdate?.rating ,
+          quantity_available : toyUpdate?.quantity_available ,
+          description : toyUpdate?.description
+        }
+      }
+      const options = { upsert: true };
+      const filter = { _id: new ObjectId(id) };
+      const result = await EduToysCollection.updateOne(filter, updateDoc, options)
+      res.send(result)
+    })
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
