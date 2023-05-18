@@ -42,6 +42,13 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/toysCategorize/:category', async (req, res) => {
+      const category = req.params.category ;
+      const query = { sub_category : category };
+      const result = await EduToysCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.get('/toys/:id', async (req, res) => {
       const id = req.params.id ;
       const query = { _id : new ObjectId(id) };
@@ -54,7 +61,10 @@ async function run() {
       const query = { 
         seller_email : sellerEmail
       };
-      const result = await EduToysCollection.find(query).toArray()
+      const sort = {
+        price : -1
+      };
+      const result = await EduToysCollection.find(query).sort(sort).toArray()
       res.send(result)
     })
 
