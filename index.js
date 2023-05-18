@@ -49,6 +49,15 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/myToys', async (req, res) => {
+      const sellerEmail = req.query?.email
+      const query = { 
+        seller_email : sellerEmail
+      };
+      const result = await EduToysCollection.find(query).toArray()
+      res.send(result)
+    })
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
