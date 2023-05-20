@@ -11,6 +11,7 @@ app.use(express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_PASSWORD}@cluster0.kmiyc5o.mongodb.net/?retryWrites=true&w=majority`;
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -19,6 +20,7 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
 async function run() {
   try {
     client.connect();
@@ -49,7 +51,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/toys/:id', async (req, res) => {
+    app.get('/toy/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await EduToysCollection.findOne(query)
@@ -58,14 +60,28 @@ async function run() {
 
     app.get('/myToys', async (req, res) => {
       const sellerEmail = req.query?.email
+      const sort = req.query?.sort
       const query = {
         seller_email: sellerEmail
       };
-      const sort = {
+      const ascendingSort = {
+        price: 1
+      };
+      const descendingSort = {
         price: -1
       };
-      const result = await EduToysCollection.find(query).sort(sort).toArray()
-      res.send(result)
+      if (sort == 'ascending') {
+        const result = await EduToysCollection.find(query).sort(ascendingSort).toArray()
+        res.send(result)
+      } else if (sort == 'descending') {
+        const result = await EduToysCollection.find(query).sort(descendingSort).toArray()
+        res.send(result)
+      } else{
+        const result = await EduToysCollection.find(query).toArray()
+        res.send(result)
+      }
+
+
     })
 
     app.post('/toys', async (req, res) => {
@@ -74,20 +90,14 @@ async function run() {
       res.send(result)
     })
 
-    app.put('/toys/:id', async (req, res) => {
+    app.put('/toyUpdate/:id', async (req, res) => {
       const id = req.params.id;
       const toyUpdate = req.body;
       const updateDoc = {
         $set: {
-          picture_url : toyUpdate?.picture_url ,
-          name : toyUpdate?.name ,
-          seller_name : toyUpdate?.seller_name ,
-          seller_email: toyUpdate?.seller_email ,
-          sub_category : toyUpdate?.sub_category ,
-          price : toyUpdate?.price ,
-          rating : toyUpdate?.rating ,
-          quantity_available : toyUpdate?.quantity_available ,
-          description : toyUpdate?.description
+          price: toyUpdate?.price,
+          quantity_available: toyUpdate?.quantity_available,
+          description: toyUpdate?.description
         }
       }
       const options = { upsert: true };
@@ -110,6 +120,7 @@ async function run() {
     // await client.close();
   }
 }
+
 run().catch(console.dir);
 
 app.listen(port, () => {
