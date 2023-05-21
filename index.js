@@ -23,12 +23,13 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    client.connect();
+    // client.connect();
     const database = client.db("Edu_Fun_Emporium_DB");
     const EduToysCollection = database.collection("Edu_Toys_Collection");
+    const EduToysReviewCollection = database.collection("Edu_Fun_Review_Collection");
 
     app.get('/toys', async (req, res) => {
-      const result = await EduToysCollection.find().toArray()
+      const result = await EduToysCollection.find().limit(20).toArray()
       res.send(result)
     })
 
@@ -110,6 +111,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await EduToysCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+    //Reviews 
+
+    app.get('/eduFunReviews', async (req, res) => {
+      const result = await EduToysReviewCollection.find().limit(5).toArray()
       res.send(result)
     })
 
